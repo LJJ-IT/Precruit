@@ -31,6 +31,9 @@ logs/
 # 测试文件
 tests/
 
+#忽略claude的配置文件
+ClAUDE.md
+
 # OS
 .DS_Store
 Thumbs.db

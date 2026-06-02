@@ -8,7 +8,8 @@ from .prompts import DOCUMENT_PARSER_PROMPT
 
 _llm = init_chat_model(
     model="deepseek-v4-flash",
-    api_key=settings.deepseek_api_key
+    api_key=settings.deepseek_api_key,
+    temperature=0.1,
 )
 
 parser_agent = create_agent(

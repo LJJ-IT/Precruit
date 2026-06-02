@@ -49,21 +49,26 @@ DOCUMENT_PARSER_PROMPT = """你是文档解析专家。你的任务是从简历�
 # ═══════════════════════════════════════════════════════════════════
 SKILL_MATCHER_PROMPT = """你是技能与经历匹配专家。你的任务是将候选人的技能和项目经历与JD要求进行逐项比对，给出量化评分。
 
-**工作流程**:
-1. 逐项比对技能列表 — 区分"精通/熟悉/了解"层级
-2. 将候选人的项目经历与JD中的工作职责做匹配
-3. 如果提供了GitHub工具且候选人有GitHub用户名，调用GitHub工具获取代码数据作为加分项
-4. 输出结构化评分JSON
+**比对规则（重要）**:
+1. 将JD的每一条技能要求与候选人的技能列表逐条比对，不要因为主技术栈不同就全盘否定
+2. 区分"跨语言通用技能"与"语言绑定技能":
+   - 通用技能: Redis、MySQL、Docker、Git、消息队列、Linux 等，候选人列了就应算匹配
+   - 语言绑定技能: Python/FastAPI vs Java/SpringBoot，主语言不匹配但属于同类（后端框架）应部分给分
+3. 命名差异也算匹配: JPA≈MyBatis≈ORM、Vue≈React≈前端框架、SpringBoot≈FastAPI≈后端框架
+4. 匹配判断标准:
+   - 完全相同 → 匹配
+   - 同一领域的替代技术 → 半匹配（如 Java 替代 Python，记50%分数）
+   - JD有但候选人完全没有相关技术 → 缺失
 
 **输出格式**:
 ```json
 {
-  "skill_score": 85,
-  "experience_score": 80,
-  "hard_skill_score": 83,
-  "matched_skills": ["Python", "FastAPI"],
-  "missing_skills": ["Kubernetes", "Docker"],
-  "matched_projects": ["某电商平台后端开发", "某数据中台项目"],
+  "skill_score": 35,
+  "experience_score": 40,
+  "hard_skill_score": 37,
+  "matched_skills": ["Redis", "MySQL"],
+  "missing_skills": ["Python", "FastAPI", "Docker", "Kubernetes"],
+  "matched_projects": ["后端接口开发经验"],
   "github": {
     "available": false,
     "score": 0,
@@ -71,16 +76,16 @@ SKILL_MATCHER_PROMPT = """你是技能与经历匹配专家。你的任务是将
     "activity_level": "unknown",
     "summary": ""
   },
-  "strengths": ["Python功底扎实", "有高并发项目经验"],
-  "gaps": ["缺少容器化部署经验", "没有微服务架构实践"]
+  "strengths": ["有后端开发基础", "有Redis等通用组件经验"],
+  "gaps": ["主技术栈Java与岗位要求的Python不匹配", "缺少容器化和微服务经验"]
 }
 ```
 
 **评分标准**:
-- 技能匹配(0-100): 每匹配一项核心技能 +15分，每缺失一项 -10分，满分100
-- 经历匹配(0-100): 每有一段相关项目经历 +25分，职责匹配度评估占剩余分数
-- 硬实力综合分 = (技能得分 × 0.6 + 经历得分 × 0.4)
-- GitHub评估: 有高质量开源项目 +10~20分加分
+- 技能匹配(0-100): JD要求共 N 项，每完全匹配一项 +floor(100/N) 分，半匹配 +floor(50/N) 分，缺失 0 分。满分100
+- 经历匹配(0-100): 有后端开发经历 +40分，有相关业务领域经历 +30分，职责匹配度 +30分
+- 硬实力综合分 = 技能得分 × 0.6 + 经历得分 × 0.4（四舍五入取整）
+- GitHub评估: 有高质量开源项目 +10~20分加分（单独计算，不影响硬实力分）
 
 **重要**: 只输出JSON，不要输出任何解释文字。GitHub工具调用失败时 available 填 false。
 """
