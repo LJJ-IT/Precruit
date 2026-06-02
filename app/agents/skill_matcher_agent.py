@@ -38,16 +38,10 @@ async def evaluate_skills(parsed_resume: dict, parsed_jd: dict) -> str:
     github_username = parsed_resume.get("github_username", "")
     agent = _build_agent(with_github=bool(github_username))
 
-    query = f"""请评估以下候选人与岗位的匹配度：
-
-候选人信息：
-{json.dumps(parsed_resume, ensure_ascii=False, indent=2)}
-
-岗位要求：
-{json.dumps(parsed_jd, ensure_ascii=False, indent=2)}
-"""
+    query = f"""候选人：{json.dumps(parsed_resume, ensure_ascii=False)}
+岗位：{json.dumps(parsed_jd, ensure_ascii=False)}"""
     if github_username:
-        query += f"\n候选人的GitHub用户名是 {github_username}，请先调用GitHub工具查看其开源项目，再综合评分。"
+        query += f"\n（请调用 GitHub 工具查看 {github_username} 的开源项目）"
 
     result = await agent.ainvoke({"messages": [{"role": "user", "content": query}]})
     messages = result.get("messages", [])

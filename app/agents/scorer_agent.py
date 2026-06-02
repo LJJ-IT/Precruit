@@ -38,25 +38,10 @@ async def evaluate_final(
     Returns:
         JSON 字符串（FinalReport格式）
     """
-    query = f"""请综合以下各维度分析结果，计算最终评分并生成报告。
-
-=== 候选人基本信息 ===
-姓名: {parsed_resume.get('name', '')}
-邮箱: {parsed_resume.get('email', '')}
-简历完整度: {parsed_resume.get('completeness', 0)}
-
-=== 岗位信息 ===
-公司: {parsed_jd.get('company_name', '')}
-职位: {parsed_jd.get('position', '')}
-
-=== Agent 2: 技能与经历匹配结果 ===
-{json.dumps(skill_result, ensure_ascii=False, indent=2)}
-
-=== Agent 3: 文化与业务匹配结果 ===
-{json.dumps(culture_result, ensure_ascii=False, indent=2)}
-
-请按评分权重计算最终得分，给出简历优化建议和面试问题。
-"""
+    query = f"""候选人：{json.dumps(parsed_resume, ensure_ascii=False)}
+岗位：{json.dumps(parsed_jd, ensure_ascii=False)}
+技能匹配：{json.dumps(skill_result, ensure_ascii=False)}
+文化匹配：{json.dumps(culture_result, ensure_ascii=False)}"""
     result = await scorer_agent.ainvoke({"messages": [{"role": "user", "content": query}]})
     messages = result.get("messages", [])
     return messages[-1].content if messages else ""
