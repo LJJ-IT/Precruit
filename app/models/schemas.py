@@ -75,6 +75,7 @@ class CultureFitResult(BaseModel):
     """Agent 3 完整输出"""
     score: int = Field(default=0, description="文化匹配得分 0-100")
     company_culture: str = Field(default="", description="公司文化画像")
+    company_business: str = Field(default="", description="公司主营业务方向")
     candidate_profile: str = Field(default="", description="候选人软性素质描述")
     match_points: list[str] = Field(default_factory=list, description="文化匹配点")
     risk_points: list[str] = Field(default_factory=list, description="文化风险点")
