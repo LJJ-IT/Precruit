@@ -22,7 +22,14 @@ culture_fit_agent = create_agent(
 
 
 async def evaluate_culture_fit(parsed_resume: dict, parsed_jd: dict) -> dict:
-    """评估文化匹配度，返回完整 agent result（含 messages 列表）"""
+    """评估文化匹配度
+
+    Args:
+        parsed_resume: 解析后的简历信息
+        parsed_jd: 解析后的岗位信息
+    Returns:
+        JSON 字符串（CultureFitResult格式）
+    """
     query = f"""候选人：{json.dumps(parsed_resume, ensure_ascii=False)}
     岗位：{json.dumps(parsed_jd, ensure_ascii=False)}"""
     return await culture_fit_agent.ainvoke({"messages": [{"role": "user", "content": query}]})
