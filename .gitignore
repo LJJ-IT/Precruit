@@ -28,6 +28,9 @@ wheels/
 *.log
 logs/
 
+# 测试文件
+tests/
+
 # OS
 .DS_Store
 Thumbs.db
