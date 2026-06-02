@@ -49,14 +49,20 @@ async def run_analysis(resume_input: str, jd_text: str) -> dict:
         return_exceptions=True,
     )
 
-    # 处理可能的异常
+    # 处理可能的异常，提取 JSON 文本
     if isinstance(skill_result, Exception):
-        skill_result = '{"hard_skill_score": 0, "error": "' + str(skill_result) + '"}'
-    if isinstance(culture_result, Exception):
-        culture_result = '{"score": 0, "error": "' + str(culture_result) + '"}'
+        skill_data = {"hard_skill_score": 0, "error": str(skill_result)}
+    else:
+        skill_data = _parse_json(skill_result)
 
-    skill_data = _parse_json(skill_result) if isinstance(skill_result, str) else skill_result
-    culture_data = _parse_json(culture_result) if isinstance(culture_result, str) else culture_result
+    if isinstance(culture_result, Exception):
+        culture_data = {"score": 0, "error": str(culture_result)}
+    else:
+        # culture_result 可能是 agent result dict（含 messages）或纯字符串
+        if isinstance(culture_result, dict) and "messages" in culture_result:
+            culture_data = _parse_json(culture_result["messages"][-1].content)
+        else:
+            culture_data = _parse_json(culture_result)
 
     # ── Agent 4: 综合评分 ──
     print("[Orchestrator] Step 3: 综合评分...")
