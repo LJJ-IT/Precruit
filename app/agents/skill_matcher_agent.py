@@ -1,8 +1,9 @@
 """Agent 2: 技能与经历匹配专家 — 比对简历与JD，评估硬实力"""
 
+import json
+
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
-from langchain_mcp_adapters.client import MultiServerMCPClient
 from ..config import settings
 from .prompts import SKILL_MATCHER_PROMPT
 
@@ -37,7 +38,6 @@ async def evaluate_skills(parsed_resume: dict, parsed_jd: dict) -> str:
     github_username = parsed_resume.get("github_username", "")
     agent = _build_agent(with_github=bool(github_username))
 
-    import json
     query = f"""请评估以下候选人与岗位的匹配度：
 
 候选人信息：

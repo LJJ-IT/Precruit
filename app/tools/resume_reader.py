@@ -5,7 +5,10 @@
 """
 
 from pathlib import Path
+
 from langchain_core.tools import tool
+from pypdf import PdfReader
+from docx import Document
 
 
 @tool
@@ -19,7 +22,6 @@ def read_resume_file(file_path: str) -> str:
     suffix = path.suffix.lower()
 
     if suffix == ".pdf":
-        from pypdf import PdfReader
         reader = PdfReader(str(path))
         text = "\n".join(
             page.extract_text() or "" for page in reader.pages
@@ -27,7 +29,6 @@ def read_resume_file(file_path: str) -> str:
         return text.strip()
 
     elif suffix == ".docx":
-        from docx import Document
         doc = Document(str(path))
         text = "\n".join(p.text for p in doc.paragraphs)
         return text.strip()

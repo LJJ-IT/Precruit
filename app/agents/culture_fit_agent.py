@@ -1,5 +1,7 @@
 """Agent 3: 文化匹配专家 — 搜索公司文化，评估候选人与公司文化契合度"""
 
+import json
+
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from langchain_tavily import TavilySearch
@@ -35,8 +37,6 @@ async def evaluate_culture_fit(parsed_resume: dict, parsed_jd: dict) -> str:
     Returns:
         JSON 字符串（CultureFitResult格式）
     """
-    import json
-
     company = parsed_jd.get("company_name", "")
     position = parsed_jd.get("position", "")
     culture_kw = ", ".join(parsed_jd.get("culture_keywords", []))
