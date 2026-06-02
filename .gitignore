@@ -39,3 +39,4 @@ Thumbs.db
 # Project specific
 uploads/
 docs/
+credentials.json
