@@ -5,7 +5,7 @@ import json
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from ..config import settings
-from ..tools.github_tools import get_github_tools
+from ..tools.mcp_tools import get_github_tools
 from .prompts import SKILL_MATCHER_PROMPT
 
 _llm = init_chat_model(

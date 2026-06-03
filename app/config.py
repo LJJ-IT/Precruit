@@ -31,6 +31,11 @@ class Settings:
     github_token: str = os.getenv("GITHUB_TOKEN", "")
     gmail_credentials_path: str = os.getenv("GMAIL_CREDENTIALS_PATH", "")
 
+    # ── 邮件 MCP（QQ/163/Gmail 等）──
+    email_user: str = os.getenv("EMAIL_USER", "")
+    email_password: str = os.getenv("EMAIL_PASSWORD", "")
+    email_type: str = os.getenv("EMAIL_TYPE", "qq")
+
     # ── 评分阈值 ──
     score_threshold: float = float(os.getenv("SCORE_THRESHOLD", "95"))
 
