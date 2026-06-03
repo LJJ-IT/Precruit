@@ -31,6 +31,10 @@ logs/
 # 测试文件
 tests/
 
+# 前端
+frontend/dist/
+node_modules/
+
 #忽略claude的配置文件
 ClAUDE.md
 
