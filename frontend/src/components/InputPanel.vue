@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue'
-import { submitAnalysis } from '../api/analysis.js'
+import { ref, reactive } from 'vue'
+import { submitAnalysisStream } from '../api/analysis.js'
 
 const emit = defineEmits(['result', 'error', 'update:loading'])
 
@@ -10,6 +10,24 @@ defineProps({
 
 const resumeText = ref('')
 const jdText = ref('')
+
+// 进度步骤列表 — 定义全部可能的步骤及其顺序
+const STEP_ORDER = [
+  '解析文档',
+  '并行分析',
+  '综合评分',
+]
+const STEP_LABELS = {
+  '解析文档': '文档解析智能体',
+  '并行分析': '技能匹配 + 文化匹配智能体',
+  '综合评分': '综合评分智能体（含邮件）',
+}
+
+const progress = reactive({
+  active: false,
+  currentStep: '',
+  completedSteps: [],
+})
 
 async function handleSubmit() {
   if (!resumeText.value.trim()) {
@@ -24,11 +42,38 @@ async function handleSubmit() {
   emit('update:loading', true)
   emit('error', '')
 
+  // 重置进度
+  progress.active = true
+  progress.currentStep = ''
+  progress.completedSteps = []
+
   try {
-    const data = await submitAnalysis(resumeText.value.trim(), jdText.value.trim())
-    emit('result', data)
+    await submitAnalysisStream(
+      resumeText.value.trim(),
+      jdText.value.trim(),
+      // onProgress
+      (event) => {
+        progress.currentStep = event.step
+        // 标记已完成的步骤
+        const idx = STEP_ORDER.indexOf(event.step)
+        if (idx > 0) {
+          progress.completedSteps = STEP_ORDER.slice(0, idx)
+        }
+      },
+      // onResult
+      (data) => {
+        progress.active = false
+        emit('result', { success: true, data })
+      },
+      // onError
+      (msg) => {
+        progress.active = false
+        emit('error', msg)
+      },
+    )
   } catch (err) {
-    const msg = err.response?.data?.detail || err.message || '请求失败，请检查服务是否启动'
+    progress.active = false
+    const msg = err.message || '请求失败，请检查服务是否启动'
     emit('error', msg)
   } finally {
     emit('update:loading', false)
@@ -43,6 +88,32 @@ function handleClear() {
 
 <template>
   <div class="input-panel">
+    <!-- 进度指示器 -->
+    <transition name="fade">
+      <div v-if="progress.active" class="progress-bar">
+        <div class="progress-steps">
+          <div
+            v-for="step in STEP_ORDER"
+            :key="step"
+            class="progress-step"
+            :class="{
+              done: progress.completedSteps.includes(step),
+              current: progress.currentStep === step,
+            }"
+          >
+            <span class="progress-dot">
+              <span v-if="progress.completedSteps.includes(step)" class="dot-check">&#10003;</span>
+              <span v-else-if="progress.currentStep === step" class="dot-pulse"></span>
+              <span v-else class="dot-empty"></span>
+            </span>
+            <span class="progress-label">
+              {{ STEP_LABELS[step] || step }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <div class="input-grid">
       <!-- 简历 — 01 -->
       <div class="input-group">
@@ -98,12 +169,12 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
     <div class="action-row">
       <button
         class="submit-btn"
-        :class="{ loading }"
-        :disabled="!resumeText.trim() || !jdText.trim() || loading"
+        :class="{ loading: progress.active }"
+        :disabled="!resumeText.trim() || !jdText.trim() || progress.active"
         @click="handleSubmit"
       >
-        <span class="submit-btn-text">{{ loading ? '分析中' : '开始匹配' }}</span>
-        <span v-if="!loading" class="submit-btn-arrow">&rarr;</span>
+        <span class="submit-btn-text">{{ progress.active ? '分析中' : '开始匹配' }}</span>
+        <span v-if="!progress.active" class="submit-btn-arrow">&rarr;</span>
         <span v-else class="submit-btn-dot"></span>
       </button>
       <button
@@ -120,6 +191,82 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
 <style scoped>
 .input-panel {
   margin-bottom: 32px;
+}
+
+/* ── Progress Bar ── */
+.progress-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.progress-steps {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.35;
+  transition: opacity 0.3s;
+}
+
+.progress-step.current {
+  opacity: 1;
+}
+
+.progress-step.done {
+  opacity: 0.6;
+}
+
+.progress-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.dot-empty {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  display: block;
+}
+
+.dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: block;
+  animation: dot-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+.dot-check {
+  font-size: 11px;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.progress-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* ── Grid ── */
@@ -176,6 +323,7 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
 .action-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 20px;
   margin-top: 28px;
   padding-top: 24px;
@@ -235,7 +383,6 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
   transform: translateX(3px);
 }
 
-/* Loading dot pulse */
 .submit-btn-dot {
   width: 6px;
   height: 6px;
@@ -272,11 +419,27 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
   cursor: default;
 }
 
+/* ── Transitions ── */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 /* ── Responsive ── */
 @media (max-width: 680px) {
   .input-grid {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+
+  .progress-steps {
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
   }
 }
 </style>
