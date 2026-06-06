@@ -12,4 +12,9 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    port: 9000,
+    host: '0.0.0.0',
+    allowedHosts: true,
+  },
 })
