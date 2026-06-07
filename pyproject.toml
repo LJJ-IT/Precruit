@@ -3,7 +3,7 @@ name = "Precruit"
 version = "0.1.0"
 description = "简历与招聘JD智能匹配平台 — 多智能体协作分析系统"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.136.3",
     "uvicorn>=0.38.0",
