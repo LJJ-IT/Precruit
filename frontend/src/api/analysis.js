@@ -20,7 +20,7 @@ function getApiBaseUrl() {
         return import.meta.env.VITE_API_BASE_URL
     }
     // 3. 默认值（本地开发）
-    return 'http://localhost:8000'
+    return 'http://localhost:9000'
 }
 
 const API_BASE_URL = getApiBaseUrl()
