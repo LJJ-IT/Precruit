@@ -1,6 +1,29 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+/**
+ * 获取 API 基础地址
+ * 优先级：运行时配置（window.__APP_CONFIG__，用于生产环境）
+ *        > 构建时环境变量（VITE_API_BASE_URL，用于开发/自定义构建）
+ *        > 默认值（本地开发 localhost）
+ */
+function getApiBaseUrl() {
+    // 1. 运行时配置（生产环境由部署脚本注入 index.html 的 <script> 块）
+    if (typeof window !== 'undefined') {
+        const url = window.__APP_CONFIG__?.apiBaseUrl
+        // 排除未替换的占位符（部署脚本未执行时，回退到下一步）
+        if (url && url !== '__API_BASE_URL__' && !url.startsWith('__')) {
+            return url
+        }
+    }
+    // 2. 构建时环境变量
+    if (import.meta.env.VITE_API_BASE_URL) {
+        return import.meta.env.VITE_API_BASE_URL
+    }
+    // 3. 默认值（本地开发）
+    return 'http://localhost:8000'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 const api = axios.create({
     baseURL: API_BASE_URL,
