@@ -51,7 +51,7 @@ export async function submitAnalysis(resumeText, jdText) {
  * @param {function} onError - (message) => void
  */
 export async function submitAnalysisStream(resumeText, jdText, onProgress, onResult, onError) {
-    const response = await fetch(`${API_BASE_URL}/api/analysis/stream`, {
+    const response = await fetch(`${API_BASE_URL}/analysis/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resume_text: resumeText, jd_text: jdText }),
