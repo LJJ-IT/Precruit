@@ -30,8 +30,8 @@ const progress = reactive({
 })
 
 async function handleSubmit() {
-  if (!resumeText.value.trim()) {
-    emit('error', '请粘贴简历内容')
+  if (!resumeText.value.trim() || resumeText.value.trim().length < 50) {
+    emit('error', '简历内容至少 50 个字符')
     return
   }
   if (!jdText.value.trim() || jdText.value.trim().length < 50) {
@@ -136,7 +136,7 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
 高级工程师  |  某科技公司  |  2021 — 至今
 负责核心系统架构设计与开发……"
         />
-        <span class="char-count">{{ resumeText.length }} 字符</span>
+        <span class="char-count" :class="{ 'char-count-warn': resumeText.length > 0 && resumeText.length < 50 }">{{ resumeText.length }} 字符 · 最低 50</span>
       </div>
 
       <!-- JD — 02 -->
@@ -161,7 +161,7 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
 任职要求
 5 年以上开发经验，熟悉主流框架"
         />
-        <span class="char-count">{{ jdText.length }} 字符</span>
+        <span class="char-count" :class="{ 'char-count-warn': jdText.length > 0 && jdText.length < 50 }">{{ jdText.length }} 字符 · 最低 50</span>
       </div>
     </div>
 
@@ -317,6 +317,10 @@ Python, FastAPI, PostgreSQL, Docker, Kubernetes
   margin-top: 6px;
   letter-spacing: 0.03em;
   font-variant-numeric: tabular-nums;
+}
+
+.char-count-warn {
+  color: #dc2626;
 }
 
 /* ── Action Row ── */

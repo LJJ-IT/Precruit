@@ -122,8 +122,8 @@ class FinalReport(BaseModel):
 
 class AnalysisRequest(BaseModel):
     """分析请求"""
-    resume_text: str = Field(default="", description="简历文本内容")
-    jd_text: str = Field(default="", description="JD文本内容", min_length=200)
+    resume_text: str = Field(default="", description="简历文本内容", min_length=50)
+    jd_text: str = Field(default="", description="JD文本内容", min_length=50)
 
 
 class AnalysisResponse(BaseModel):
