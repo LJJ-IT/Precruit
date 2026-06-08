@@ -9,8 +9,12 @@ from ..tools.web_search import web_search
 from .prompts import CULTURE_FIT_PROMPT
 
 _llm = init_chat_model(
-    model="deepseek-v4-flash",
-    api_key=settings.deepseek_api_key,
+    # model="deepseek-v4-flash",
+    # api_key=settings.deepseek_api_key,
+    model=settings.deepseek_model_name,
+    api_key=settings.siliconflow_api_key,
+    base_url=settings.siliconflow_base_url,
+    model_provider="openai",
     temperature=0.1,
 )
 
